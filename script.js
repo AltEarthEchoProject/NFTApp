@@ -1,12 +1,26 @@
 function ignite() {
   const button = document.querySelector('.fire-button');
   const status = document.querySelector('.status');
-  const flame = document.createElement('div');
-  flame.className = 'flame';
-  flame.innerText = '🔥';
-  document.body.appendChild(flame);
 
-  // 🔥 効果音の再生（burn.mp3）
+  // 🔥 炎エフェクト追加
+  for (let i = 0; i < 5; i++) {
+    const flame = document.createElement('div');
+    flame.className = 'flame';
+    flame.innerText = '🔥';
+    flame.style.position = 'absolute';
+    flame.style.left = `${Math.random() * 90 + 5}%`;
+    flame.style.top = `${Math.random() * 80 + 10}%`;
+    flame.style.fontSize = `${Math.random() * 40 + 30}px`;
+    flame.style.opacity = '0.8';
+    document.body.appendChild(flame);
+
+    // 自動削除
+    setTimeout(() => {
+      flame.remove();
+    }, 2000);
+  }
+
+  // 🔊 効果音再生
   const audio = document.getElementById("burn-sound");
   if (audio) {
     audio.currentTime = 0;
@@ -15,13 +29,19 @@ function ignite() {
     });
   }
 
-  // ボタン無効化演出
+  // 🔴 背景を一瞬赤くする（フラッシュ的演出）
+  document.body.style.transition = 'background-color 0.2s';
+  document.body.style.backgroundColor = '#ffdddd';
+  setTimeout(() => {
+    document.body.style.backgroundColor = '';
+  }, 300);
+
+  // 🛑 ボタン無効化
   button.disabled = true;
   status.innerText = '燃やしています…（Needless Funding）';
 
-  // 演出終了後
+  // ✅ 終了後ステータス更新
   setTimeout(() => {
-    flame.remove();
     button.disabled = false;
     const count = Number(localStorage.getItem('mudaCount') || 0) + 1;
     localStorage.setItem('mudaCount', count);
