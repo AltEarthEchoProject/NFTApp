@@ -5,55 +5,48 @@
   <title>NFT｜Needless Funding Tournament</title>
   <style>
     body {
-      font-family: sans-serif;
-      text-align: center;
-      background-color: #fff5f5;
+      font-family: 'Arial', sans-serif;
+      background-color: #fffef5;
+      color: #333;
       margin: 0;
-      padding: 2em;
+      padding: 20px;
     }
     h1 {
-      font-size: 1.8em;
+      font-size: 28px;
+      margin-bottom: 10px;
     }
-    .status, .income-section, .muda-index-display, .history-toggle, .history-log, .ranking, .profile {
-      margin: 1em auto;
-      max-width: 500px;
-      text-align: left;
+    .status, .muda-index-display {
+      margin: 10px 0;
+      font-weight: bold;
     }
-    .fire-button {
+    .income-section, .donation-buttons, .history-section, .region-selector, .ranking-display {
+      margin: 20px 0;
+    }
+    .fire-button, .donate-button, .custom-donate {
+      font-size: 16px;
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
       background-color: #ff6666;
       border: none;
+      border-radius: 8px;
       color: white;
-      padding: 1em 2em;
-      font-size: 1.2em;
-      border-radius: 10px;
-      cursor: pointer;
     }
     .flame {
-      animation: rise 1.5s linear forwards;
+      animation: flicker 1s infinite;
     }
-    @keyframes rise {
-      0% { transform: translateY(0); opacity: 1; }
-      100% { transform: translateY(-100px); opacity: 0; }
+    @keyframes flicker {
+      0% { opacity: 0.8; }
+      50% { opacity: 0.4; }
+      100% { opacity: 0.8; }
     }
     .history-log {
       max-height: 200px;
       overflow-y: auto;
-      background: #fff0f0;
-      padding: 0.5em;
-      border: 1px solid #ccc;
-      display: none;
-    }
-    .history-toggle button {
-      margin-top: 0.5em;
-    }
-    .ranking, .profile {
-      background-color: #f2f2f2;
-      padding: 1em;
-      border-radius: 8px;
-    }
-    .rank-title {
-      font-weight: bold;
-      margin-top: 0.5em;
+      background: #f8f8f8;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -72,27 +65,38 @@
     <strong>MUDA Index:</strong> <span id="muda-index">--</span>%
   </div>
 
-  <div class="profile">
-    <h3>あなたのプロフィール</h3>
-    <p id="profile-summary">--</p>
+  <div class="donation-buttons">
+    <button class="donate-button" onclick="ignite(1)">$1 MUDA</button>
+    <button class="donate-button" onclick="ignite(10)">$10 MUDA</button>
+    <button class="donate-button" onclick="ignite(100)">$100 MUDA</button>
+    <button class="donate-button" onclick="ignite(1000)">$1000 MUDA</button>
+    <input type="number" id="customAmount" placeholder="任意の金額" />
+    <button class="custom-donate" onclick="igniteCustom()">任意額 MUDA</button>
   </div>
 
-  <button class="fire-button" onclick="ignite()">🔥 MUDA課金 🔥</button>
-
-  <div class="history-toggle">
-    <button onclick="toggleHistory()">MUDA履歴の表示 / 非表示</button>
+  <div class="region-selector">
+    <label for="region">地域を選択：</label>
+    <select id="region">
+      <option value="tokyo">東京</option>
+      <option value="osaka">大阪</option>
+      <option value="fukuoka">福岡</option>
+      <option value="hokkaido">北海道</option>
+    </select>
   </div>
-  <div class="history-log" id="history-log"></div>
 
-  <div class="ranking">
-    <h3>WASTE SCORE 称号</h3>
-    <div id="rank-display">--</div>
+  <div class="ranking-display">
+    <strong>あなたの地域ランキング：</strong> <span id="rank">--位（仮）</span>
+  </div>
+
+  <div class="history-section">
+    <strong>MUDA履歴:</strong>
+    <div id="history" class="history-log"></div>
   </div>
 
   <audio id="burn-sound" src="burn.mp3"></audio>
 
   <script>
-    function ignite() {
+    function ignite(amount) {
       const button = document.querySelector('.fire-button');
       const status = document.querySelector('.status');
 
@@ -103,10 +107,10 @@
         flame.style.position = 'absolute';
         flame.style.left = `${Math.random() * 90 + 5}%`;
         flame.style.top = `${Math.random() * 80 + 10}%`;
-        flame.style.fontSize = `${Math.random() * 30 + 20}px`;
+        flame.style.fontSize = `${Math.random() * 40 + 30}px`;
         flame.style.opacity = '0.8';
         document.body.appendChild(flame);
-        setTimeout(() => flame.remove(), 1500);
+        setTimeout(() => flame.remove(), 2000);
       }
 
       const audio = document.getElementById("burn-sound");
@@ -115,28 +119,40 @@
         audio.play().catch(() => {});
       }
 
-      button.disabled = true;
+      document.body.style.transition = 'background-color 0.2s';
+      document.body.style.backgroundColor = '#ffeeee';
+      setTimeout(() => document.body.style.backgroundColor = '', 300);
+
       status.innerText = '燃やしています…';
 
       setTimeout(() => {
-        button.disabled = false;
         const count = Number(localStorage.getItem('mudaCount') || 0) + 1;
         localStorage.setItem('mudaCount', count);
-        const incomeValue = Number(localStorage.getItem('userIncome') || 0);
-        const total = count * 100;
-        const mudaIndex = incomeValue ? ((total / incomeValue) * 100).toFixed(4) : '--';
+        status.innerText = `あなたの無駄：${count} 回`;
 
-        document.querySelector(".status").innerText = `あなたの無駄：${count} 回`;
+        const income = Number(localStorage.getItem('userIncome') || 0);
+        const total = Number(localStorage.getItem('mudaTotal') || 0) + amount;
+        localStorage.setItem('mudaTotal', total);
+
+        const mudaIndex = income > 0 ? ((total / income) * 100).toFixed(4) : '--';
         document.getElementById("muda-index").innerText = mudaIndex;
 
-        const now = new Date().toLocaleString();
-        const logs = JSON.parse(localStorage.getItem("mudaLogs") || "[]");
-        logs.unshift(`${now} - 100円燃やした`);
-        localStorage.setItem("mudaLogs", JSON.stringify(logs));
-        updateHistory();
-        updateRank(mudaIndex);
-        updateProfile(count, incomeValue, mudaIndex);
-      }, 1500);
+        const region = document.getElementById("region").value;
+        const rankMock = Math.floor(Math.random() * 999 + 1);
+        document.getElementById("rank").innerText = `${rankMock}位（仮）`;
+
+        const history = document.getElementById("history");
+        const time = new Date().toLocaleString();
+        const entry = document.createElement("div");
+        entry.textContent = `${time} - $${amount} MUDA`;
+        history.prepend(entry);
+      }, 1000);
+    }
+
+    function igniteCustom() {
+      const amt = Number(document.getElementById("customAmount").value);
+      if (!isNaN(amt) && amt > 0) ignite(amt);
+      else alert("有効な金額を入力してください。");
     }
 
     function saveIncome() {
@@ -144,65 +160,23 @@
       if (income > 0) {
         localStorage.setItem('userIncome', income);
         alert("年収が保存されました！");
-        updateDisplay();
       } else {
-        alert("正しい年収を入力してください。");
+        alert("正しい年収を入力してください。")
       }
     }
 
-    function updateHistory() {
-      const logs = JSON.parse(localStorage.getItem("mudaLogs") || "[]");
-      const logDiv = document.getElementById("history-log");
-      logDiv.innerHTML = logs.map(log => `<div>${log}</div>`).join('');
-    }
-
-    function toggleHistory() {
-      const el = document.getElementById("history-log");
-      el.style.display = el.style.display === "none" ? "block" : "none";
-    }
-
-    function updateRank(index) {
-      const el = document.getElementById("rank-display");
-      const idx = parseFloat(index);
-      if (isNaN(idx)) {
-        el.innerText = "--";
-        return;
-      }
-      let title = "";
-      if (idx < 0.1) title = "Ash Rookie";
-      else if (idx < 0.5) title = "Heat Seeker";
-      else if (idx < 1.0) title = "Fire Adept";
-      else if (idx < 5.0) title = "Blaze Lord";
-      else if (idx < 10.0) title = "Inferno Monarch";
-      else title = "BURN KING";
-      el.innerText = `${title}（${idx}%）`;
-    }
-
-    function updateProfile(count, income, index) {
-      const profile = document.getElementById("profile-summary");
-      const total = count * 100;
-      profile.innerHTML = `
-        🔥 MUDA回数：${count} 回<br>
-        💴 総額：${total.toLocaleString()} 円<br>
-        💼 年収：${income.toLocaleString()} 円<br>
-        📊 MUDA Index：${index}%
-      `;
-    }
-
-    function updateDisplay() {
-      const savedIncome = Number(localStorage.getItem('userIncome') || 0);
+    window.onload = () => {
+      const savedIncome = localStorage.getItem('userIncome');
+      if (savedIncome) document.getElementById("income").value = savedIncome;
       const count = Number(localStorage.getItem('mudaCount') || 0);
-      const total = count * 100;
-      const mudaIndex = savedIncome ? ((total / savedIncome) * 100).toFixed(4) : '--';
-      document.getElementById("income").value = savedIncome;
+      const total = Number(localStorage.getItem('mudaTotal') || 0);
+      const income = Number(savedIncome || 0);
       document.querySelector(".status").innerText = `あなたの無駄：${count} 回`;
-      document.getElementById("muda-index").innerText = mudaIndex;
-      updateRank(mudaIndex);
-      updateHistory();
-      updateProfile(count, savedIncome, mudaIndex);
+      if (income > 0 && total > 0) {
+        const mudaIndex = ((total / income) * 100).toFixed(4);
+        document.getElementById("muda-index").innerText = mudaIndex;
+      }
     }
-
-    window.onload = updateDisplay;
   </script>
 </body>
 </html>
