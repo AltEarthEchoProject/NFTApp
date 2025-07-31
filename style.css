@@ -35,3 +35,20 @@ p {
     transform: translate(-50%, -100%) scale(2);
   }
 }
+.income-section {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.income-section input {
+  padding: 6px;
+  font-size: 16px;
+  width: 200px;
+}
+
+.muda-index-display {
+  margin-top: 10px;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+}
