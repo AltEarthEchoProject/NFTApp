@@ -1,28 +1,34 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>NFT｜Needless Funding Tournament</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
   <style>
-    .log-entry {
-      font-size: 14px;
-      color: #333;
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background-color: #fffaf5;
     }
-    .title-section {
+    .income-section,
+    .muda-index-display,
+    .muda-history-container {
       margin-top: 20px;
     }
-    .title-section strong {
+    .muda-history-container {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background-color: #f9f9f9;
+    }
+    .muda-history-container h3 {
+      margin-top: 0;
+    }
+    .fire-button {
+      margin-top: 20px;
+      padding: 10px 20px;
       font-size: 18px;
-    }
-    .rank-table {
-      font-size: 13px;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    .rank-table th, .rank-table td {
-      border: 1px solid #aaa;
-      padding: 4px 8px;
     }
   </style>
 </head>
@@ -44,49 +50,35 @@
     <strong>MUDA Index:</strong> <span id="muda-index">--</span>%
   </div>
 
-  <!-- 称号表示 -->
-  <div class="title-section">
-    <strong>現在の称号:</strong> <span id="current-title">--</span>
-  </div>
-
-  <!-- 履歴ログ -->
-  <div class="title-section">
-    <strong>MUDA履歴:</strong>
-    <ul id="log-list"></ul>
-  </div>
-
-  <!-- 称号一覧 -->
-  <div class="title-section">
-    <strong>称号一覧:</strong>
-    <table class="rank-table">
-      <tr><th>MUDA回数</th><th>称号</th></tr>
-      <tr><td>1～4回</td><td>Waste Rookie</td></tr>
-      <tr><td>5～9回</td><td>Heat Seeker</td></tr>
-      <tr><td>10～19回</td><td>Burn King</td></tr>
-      <tr><td>20回以上</td><td>Blaze Overlord</td></tr>
-    </table>
-  </div>
-
   <!-- MUDA課金ボタン -->
   <button class="fire-button" onclick="ignite()">🔥 MUDA課金 🔥</button>
+
+  <!-- MUDA履歴表示 -->
+  <div class="muda-history-container">
+    <h3>MUDA履歴</h3>
+    <div id="muda-history"></div>
+  </div>
 
   <!-- 効果音 -->
   <audio id="burn-sound" src="burn.mp3"></audio>
 
-  <!-- JSスクリプト -->
+  <!-- スクリプト -->
   <script>
-    function getTitle(count) {
-      if (count >= 20) return "Blaze Overlord";
-      if (count >= 10) return "Burn King";
-      if (count >= 5) return "Heat Seeker";
-      if (count >= 1) return "Waste Rookie";
-      return "--";
+    function saveIncome() {
+      const income = Number(document.getElementById("income").value);
+      if (income > 0) {
+        localStorage.setItem('userIncome', income);
+        alert("年収が保存されました！");
+      } else {
+        alert("正しい年収を入力してください。");
+      }
     }
 
     function ignite() {
       const button = document.querySelector('.fire-button');
       const status = document.querySelector('.status');
 
+      // 🔥 炎エフェクト
       for (let i = 0; i < 5; i++) {
         const flame = document.createElement('div');
         flame.className = 'flame';
@@ -100,70 +92,62 @@
         setTimeout(() => flame.remove(), 2000);
       }
 
+      // 🔊 効果音
       const audio = document.getElementById("burn-sound");
       if (audio) {
         audio.currentTime = 0;
-        audio.play().catch(() => {});
+        audio.play().catch((e) => console.log("音声エラー:", e));
       }
 
+      // 🔴 背景フラッシュ
       document.body.style.transition = 'background-color 0.2s';
       document.body.style.backgroundColor = '#ffdddd';
       setTimeout(() => {
         document.body.style.backgroundColor = '';
       }, 300);
 
+      // ボタン無効化
       button.disabled = true;
       status.innerText = '燃やしています…（Needless Funding）';
 
       setTimeout(() => {
         button.disabled = false;
+
+        // MUDAカウント更新
         const count = Number(localStorage.getItem('mudaCount') || 0) + 1;
         localStorage.setItem('mudaCount', count);
         status.innerText = `あなたの無駄：${count} 回`;
 
-        const title = getTitle(count);
-        document.getElementById("current-title").innerText = title;
-
-        const now = new Date().toLocaleString();
-        const logList = JSON.parse(localStorage.getItem("mudaLogs") || "[]");
-        logList.unshift(`${now} 🔥`);
-        localStorage.setItem("mudaLogs", JSON.stringify(logList.slice(0, 20)));
-        updateLogDisplay();
-
+        // MUDA Index更新
         const incomeValue = Number(localStorage.getItem('userIncome') || 0);
         if (incomeValue > 0) {
           const total = count * 100;
           const mudaIndex = ((total / incomeValue) * 100).toFixed(4);
-          const mudaDisplay = document.getElementById("muda-index");
-          if (mudaDisplay) {
-            mudaDisplay.innerText = `${mudaIndex}`;
-          }
+          document.getElementById("muda-index").innerText = mudaIndex;
         }
+
+        // MUDA履歴追加
+        const history = JSON.parse(localStorage.getItem('mudaHistory') || '{}');
+        const today = new Date().toLocaleDateString();
+        history[today] = (history[today] || 0) + 1;
+        localStorage.setItem('mudaHistory', JSON.stringify(history));
+        renderHistory();
       }, 2000);
     }
 
-    function saveIncome() {
-      const income = Number(document.getElementById("income").value);
-      if (income > 0) {
-        localStorage.setItem('userIncome', income);
-        alert("年収が保存されました！");
-      } else {
-        alert("正しい年収を入力してください。");
-      }
-    }
-
-    function updateLogDisplay() {
-      const logList = JSON.parse(localStorage.getItem("mudaLogs") || "[]");
-      const ul = document.getElementById("log-list");
-      ul.innerHTML = "";
-      logList.forEach(log => {
-        const li = document.createElement("li");
-        li.innerText = log;
-        li.className = "log-entry";
-        ul.appendChild(li);
+    function renderHistory() {
+      const container = document.getElementById('muda-history');
+      container.innerHTML = '';
+      const history = JSON.parse(localStorage.getItem('mudaHistory') || '{}');
+      const sortedDates = Object.keys(history).sort((a, b) => new Date(b) - new Date(a)); // 最新順
+      sortedDates.forEach(date => {
+        const p = document.createElement('p');
+        p.innerText = `${date}：${history[date]} 回 MUDA🔥`;
+        container.appendChild(p);
       });
     }
 
+    // 初期化（年収・カウント・履歴）
     window.onload = () => {
       const savedIncome = localStorage.getItem('userIncome');
       if (savedIncome) {
@@ -176,8 +160,8 @@
 
       const count = Number(localStorage.getItem('mudaCount') || 0);
       document.querySelector(".status").innerText = `あなたの無駄：${count} 回`;
-      document.getElementById("current-title").innerText = getTitle(count);
-      updateLogDisplay();
+
+      renderHistory();
     };
   </script>
 </body>
