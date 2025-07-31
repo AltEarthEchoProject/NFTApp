@@ -1,113 +1,109 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NFT | Needless Funding Tournament</title>
+  <meta charset="UTF-8">
+  <title>NFT｜Needless Funding Tournament</title>
   <style>
     body {
+      background-color: #fdf6e3;
       font-family: 'Helvetica Neue', sans-serif;
       text-align: center;
-      background-color: #fff8f0;
-      margin: 0;
       padding: 20px;
     }
     h1 {
-      font-size: 28px;
+      font-size: 26px;
     }
-    #countDisplay {
-      font-size: 20px;
-      margin-top: 10px;
-    }
-    .muda-button {
-      background-color: crimson;
+    .fire-button {
+      font-size: 24px;
+      padding: 12px 24px;
+      background-color: #ff4b3e;
       color: white;
-      font-size: 20px;
-      padding: 16px 40px;
-      margin: 20px;
       border: none;
-      border-radius: 12px;
+      border-radius: 10px;
       cursor: pointer;
+      margin-top: 20px;
     }
-    .muda-button:hover {
-      background-color: darkred;
+    .income-section {
+      margin: 20px 0;
     }
-    #history {
-      margin-top: 30px;
-      max-width: 300px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    #ranking {
-      margin-top: 30px;
-    }
-    .badge {
+    .muda-index-display {
       font-weight: bold;
-      color: orange;
+      margin: 10px 0;
+    }
+    .history-list {
+      margin-top: 20px;
+      background: white;
+      padding: 10px;
+      border-radius: 10px;
+      display: inline-block;
+      text-align: left;
+      max-width: 90%;
+    }
+    .ranking {
+      margin-top: 30px;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <h1>NFT | Needless Funding Tournament</h1>
-  <div id="countDisplay">あなたの無駄：<span id="count">0</span> 回</div>
+  <h1>NFT｜Needless Funding Tournament</h1>
+  <p class="status">あなたの無駄：<span id="muda-count">0</span> 回</p>
 
-  <div style="margin-top: 10px;">
-    あなたの年収（円）：<input type="number" id="income" value="2000000" />
-  </div>
-  <div id="mudaIndex">MUDA Index: <span id="indexValue">0%</span></div>
-
-  <button class="muda-button" onclick="addMuda()">🔥 MUDA課金 🔥</button>
-
-  <div id="history">
-    <h3>MUDA履歴:</h3>
-    <ul id="historyList"></ul>
+  <div class="income-section">
+    <label for="income">あなたの年収（円）：</label>
+    <input type="number" id="income" placeholder="例：5000000">
   </div>
 
-  <div id="ranking">
-    <h3>ランキング（仮）</h3>
-    🌍世界1位：BurnMaster999（<span id="worldCount">999</span>回）<br>
-    🇯🇵日本1位：Kaichiro（<span id="japanCount">123</span>回）<br>
-    🏡地域1位：You（今ここ）<br>
+  <div class="muda-index-display">
+    <strong>MUDA Index:</strong> <span id="muda-index">--</span>%
   </div>
 
-  <div id="titleBadge" class="badge"></div>
+  <button class="fire-button" onclick="ignite()">🔥 MUDA課金 🔥</button>
+
+  <div class="history-list" id="history-list">
+    <strong>MUDA履歴:</strong>
+    <ul id="history-ul"></ul>
+  </div>
+
+  <div class="ranking">
+    <p>ランキング（仮）</p>
+    🌍 世界1位：BurnMaster999（999回）<br>
+    🇯🇵 日本1位：Kaichiro（123回）<br>
+    🏡 地域1位：You（今ここ）
+  </div>
+
+  <audio id="burn-sound" src="burn.mp3" preload="auto"></audio>
 
   <script>
-    let count = 0;
-    const historyList = document.getElementById("historyList");
+    let mudaCount = 0;
 
-    function updateIndex() {
-      const income = parseFloat(document.getElementById("income").value);
-      const mudaIndex = (count / (income / 100000)) * 100;
-      document.getElementById("indexValue").innerText = mudaIndex.toFixed(1) + "%";
-    }
+    function ignite() {
+      mudaCount++;
+      document.getElementById("muda-count").textContent = mudaCount;
 
-    function updateTitleBadge() {
-      const badge = document.getElementById("titleBadge");
-      if (count >= 200) badge.innerText = "👑 MUDA帝王 👑";
-      else if (count >= 100) badge.innerText = "🔥 Burn King 🔥";
-      else if (count >= 50) badge.innerText = "💸 MUDA王子 💸";
-      else if (count >= 20) badge.innerText = "🧯浪費貴族 🧯";
-      else badge.innerText = "";
-    }
+      // MUDA Index更新
+      const income = parseInt(document.getElementById("income").value);
+      const index = income ? ((mudaCount / income) * 100000).toFixed(1) : "--";
+      document.getElementById("muda-index").textContent = index;
 
-    function addMuda() {
-      count++;
-      document.getElementById("count").innerText = count;
+      // 音声再生
+      const sound = document.getElementById("burn-sound");
+      sound.currentTime = 0;
+      sound.play();
+
+      // 履歴追加（先頭に）
+      const ul = document.getElementById("history-ul");
+      const li = document.createElement("li");
       const now = new Date();
-      const timeStr = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`;
-      const entry = document.createElement("li");
-      entry.textContent = `🔥 ${timeStr} - MUDA ${count}回目`;
-      historyList.insertBefore(entry, historyList.firstChild);
-      if (historyList.children.length > 10) {
-        historyList.removeChild(historyList.lastChild);
-      }
-      updateIndex();
-      updateTitleBadge();
-    }
+      const timestamp = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+      li.textContent = `🔥 ${timestamp} - MUDA ${mudaCount}回目`;
+      ul.insertBefore(li, ul.firstChild);
 
-    document.getElementById("income").addEventListener("input", updateIndex);
-    updateIndex();
+      // 履歴10件までに制限
+      if (ul.children.length > 10) {
+        ul.removeChild(ul.lastChild);
+      }
+    }
   </script>
 </body>
 </html>
