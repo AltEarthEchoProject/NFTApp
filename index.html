@@ -3,87 +3,71 @@
 <head>
   <meta charset="UTF-8">
   <title>NFT｜Needless Funding Tournament</title>
-  <link rel="stylesheet" href="style.css">
   <style>
     body {
       font-family: sans-serif;
-      padding: 20px;
-      background-color: #fffaf5;
+      text-align: center;
+      padding: 30px;
     }
-    .income-section,
-    .muda-index-display,
-    .muda-history-container {
-      margin-top: 20px;
-    }
-    .muda-history-container {
-      max-height: 200px;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      padding: 10px;
-      background-color: #f9f9f9;
-    }
-    .muda-history-container h3 {
-      margin-top: 0;
+    .status, .rank, .muda-index-display, .title-display, .history, .income-section {
+      margin: 15px 0;
     }
     .fire-button {
-      margin-top: 20px;
+      font-size: 24px;
       padding: 10px 20px;
-      font-size: 18px;
+    }
+    .flame {
+      pointer-events: none;
+      position: absolute;
+      animation: fadeOut 2s forwards;
+    }
+    @keyframes fadeOut {
+      to { opacity: 0; transform: translateY(-30px); }
     }
   </style>
 </head>
 <body>
   <h1>NFT｜Needless Funding Tournament</h1>
 
-  <!-- ステータス表示 -->
   <p class="status">あなたの無駄：0 回</p>
 
-  <!-- 年収入力エリア -->
   <div class="income-section">
     <label for="income">あなたの年収（円）:</label>
     <input type="number" id="income" placeholder="例：5000000" />
     <button onclick="saveIncome()">保存</button>
   </div>
 
-  <!-- MUDA Index 表示 -->
   <div class="muda-index-display">
     <strong>MUDA Index:</strong> <span id="muda-index">--</span>%
   </div>
 
-  <!-- MUDA課金ボタン -->
-  <button class="fire-button" onclick="ignite()">🔥 MUDA課金 🔥</button>
-
-  <!-- MUDA履歴表示 -->
-  <div class="muda-history-container">
-    <h3>MUDA履歴</h3>
-    <div id="muda-history"></div>
+  <div class="title-display">
+    <strong>称号:</strong> <span id="user-title">--</span>
   </div>
 
-  <!-- 効果音 -->
-  <audio id="burn-sound" src="burn.mp3"></audio>
+  <div class="rank">
+    <strong>世界ランク（仮）:</strong> <span id="global-rank">--</span> 位
+  </div>
 
-  <!-- スクリプト -->
+  <div class="history">
+    <strong>MUDA履歴:</strong>
+    <ul id="history-log"></ul>
+  </div>
+
+  <button class="fire-button" onclick="ignite()">🔥 MUDA課金 🔥</button>
+
   <script>
-    function saveIncome() {
-      const income = Number(document.getElementById("income").value);
-      if (income > 0) {
-        localStorage.setItem('userIncome', income);
-        alert("年収が保存されました！");
-      } else {
-        alert("正しい年収を入力してください。");
-      }
-    }
-
     function ignite() {
       const button = document.querySelector('.fire-button');
       const status = document.querySelector('.status');
+      button.disabled = true;
+      status.innerText = '燃やしています…（Needless Funding）';
 
-      // 🔥 炎エフェクト
+      // 演出：炎エフェクト
       for (let i = 0; i < 5; i++) {
         const flame = document.createElement('div');
         flame.className = 'flame';
         flame.innerText = '🔥';
-        flame.style.position = 'absolute';
         flame.style.left = `${Math.random() * 90 + 5}%`;
         flame.style.top = `${Math.random() * 80 + 10}%`;
         flame.style.fontSize = `${Math.random() * 40 + 30}px`;
@@ -92,74 +76,108 @@
         setTimeout(() => flame.remove(), 2000);
       }
 
-      // 🔊 効果音
-      const audio = document.getElementById("burn-sound");
-      if (audio) {
-        audio.currentTime = 0;
-        audio.play().catch((e) => console.log("音声エラー:", e));
-      }
-
-      // 🔴 背景フラッシュ
+      // 背景一瞬変更
       document.body.style.transition = 'background-color 0.2s';
       document.body.style.backgroundColor = '#ffdddd';
       setTimeout(() => {
         document.body.style.backgroundColor = '';
       }, 300);
 
-      // ボタン無効化
-      button.disabled = true;
-      status.innerText = '燃やしています…（Needless Funding）';
-
       setTimeout(() => {
-        button.disabled = false;
-
-        // MUDAカウント更新
         const count = Number(localStorage.getItem('mudaCount') || 0) + 1;
         localStorage.setItem('mudaCount', count);
         status.innerText = `あなたの無駄：${count} 回`;
 
-        // MUDA Index更新
-        const incomeValue = Number(localStorage.getItem('userIncome') || 0);
-        if (incomeValue > 0) {
+        const now = new Date().toLocaleString();
+        const history = JSON.parse(localStorage.getItem('mudaHistory') || '[]');
+        history.unshift(`第${count}回：${now}`);
+        localStorage.setItem('mudaHistory', JSON.stringify(history.slice(0, 20))); // 最大20件
+        updateHistory();
+
+        const income = Number(localStorage.getItem('userIncome') || 0);
+        if (income > 0) {
           const total = count * 100;
-          const mudaIndex = ((total / incomeValue) * 100).toFixed(4);
+          const mudaIndex = ((total / income) * 100).toFixed(4);
           document.getElementById("muda-index").innerText = mudaIndex;
         }
 
-        // MUDA履歴追加
-        const history = JSON.parse(localStorage.getItem('mudaHistory') || '{}');
-        const today = new Date().toLocaleDateString();
-        history[today] = (history[today] || 0) + 1;
-        localStorage.setItem('mudaHistory', JSON.stringify(history));
-        renderHistory();
+        updateTitle(count);
+        updateRank(count);
+        button.disabled = false;
       }, 2000);
     }
 
-    function renderHistory() {
-      const container = document.getElementById('muda-history');
-      container.innerHTML = '';
-      const history = JSON.parse(localStorage.getItem('mudaHistory') || '{}');
-      const sortedDates = Object.keys(history).sort((a, b) => new Date(b) - new Date(a)); // 最新順
-      sortedDates.forEach(date => {
-        const p = document.createElement('p');
-        p.innerText = `${date}：${history[date]} 回 MUDA🔥`;
-        container.appendChild(p);
-      });
+    function saveIncome() {
+      const income = Number(document.getElementById("income").value);
+      if (income > 0) {
+        localStorage.setItem('userIncome', income);
+        alert("年収を保存しました！");
+      } else {
+        alert("正しい年収を入力してください。");
+      }
     }
 
-    // 初期化（年収・カウント・履歴）
+    function updateTitle(count) {
+      const titleSpan = document.getElementById("user-title");
+      const titles = [
+        [1000, "🔥 Burn Emperor"],
+        [500, "🔥 Blaze King"],
+        [200, "🔥 Inferno Knight"],
+        [100, "🔥 Heatbringer"],
+        [50, "🔥 Charmer"],
+        [20, "🔥 Ember"],
+        [10, "🔥 Spark"],
+        [1, "🔥 Igniter"],
+        [0, "--"]
+      ];
+      for (let [min, title] of titles) {
+        if (count >= min) {
+          titleSpan.innerText = title;
+          break;
+        }
+      }
+    }
+
+    function updateRank(count) {
+      // 仮の世界ランク（ランダム演出）
+      const rank = Math.max(1, 100000 - count * 17);
+      document.getElementById("global-rank").innerText = rank.toLocaleString();
+    }
+
+    function updateHistory() {
+      const log = document.getElementById("history-log");
+      const history = JSON.parse(localStorage.getItem('mudaHistory') || '[]');
+      log.innerHTML = '';
+      for (const item of history) {
+        const li = document.createElement('li');
+        li.innerText = item;
+        log.appendChild(li);
+      }
+    }
+
     window.onload = () => {
-      const savedIncome = localStorage.getItem('userIncome');
-      if (savedIncome) {
-        document.getElementById("income").value = savedIncome;
-        const count = Number(localStorage.getItem('mudaCount') || 0);
+      const count = Number(localStorage.getItem('mudaCount') || 0);
+      document.querySelector(".status").innerText = `あなたの無駄：${count} 回`;
+
+      const income = Number(localStorage.getItem('userIncome') || 0);
+      if (income > 0 && count > 0) {
         const total = count * 100;
-        const mudaIndex = ((total / savedIncome) * 100).toFixed(4);
+        const mudaIndex = ((total / income) * 100).toFixed(4);
         document.getElementById("muda-index").innerText = mudaIndex;
       }
 
-      const count = Number(localStorage.getItem('mudaCount') || 0);
-      document.querySelector(".status").innerText = `あなたの無駄：${count} 回`;
+      updateTitle(count);
+      updateRank(count);
+      updateHistory();
+
+      const savedIncome = localStorage.getItem('userIncome');
+      if (savedIncome) {
+        document.getElementById("income").value = savedIncome;
+      }
+    };
+  </script>
+</body>
+</html>
 
       renderHistory();
     };
