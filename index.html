@@ -1,135 +1,194 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <title>NFT｜Needless Funding Tournament</title>
+  <meta charset="UTF-8">
+  <title>MUDA｜Needless Funding Tournament</title>
   <style>
     body {
-      font-family: 'Arial', sans-serif;
-      margin: 20px;
-      background-color: #fff;
-      color: #333;
+      font-family: sans-serif;
+      background: #fffbe8;
+      padding: 2rem;
     }
     h1 {
-      font-size: 28px;
-      color: #c0392b;
+      font-size: 2rem;
+      margin-bottom: 1rem;
     }
-    .fire-button {
-      font-size: 18px;
-      padding: 10px 20px;
-      margin: 5px;
-      background-color: #e74c3c;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
+    .form-group, .income-section, .ranking-section {
+      margin-bottom: 1rem;
     }
-    .income-section, .location-section {
-      margin: 20px 0;
+    .fire-button, .save-button {
+      font-size: 1.2rem;
+      padding: 0.5rem 1rem;
+      margin-right: 5px;
     }
-    .muda-index-display {
-      margin: 15px 0;
+    .ranking-table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 1rem;
+    }
+    .ranking-table th, .ranking-table td {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      text-align: left;
+    }
+    .highlight {
+      background-color: #ffe8a8;
       font-weight: bold;
     }
-    #history {
-      margin-top: 20px;
+    .history {
+      margin-top: 1rem;
+      font-size: 0.9rem;
       max-height: 200px;
       overflow-y: auto;
+      background: #f5f5f5;
+      padding: 0.5rem;
       border: 1px solid #ccc;
-      padding: 10px;
-    }
-    .ranking {
-      margin-top: 30px;
     }
   </style>
 </head>
 <body>
-  <h1>NFT｜Needless Funding Tournament</h1>
+  <h1>MUDA｜Needless Funding Tournament</h1>
 
-  <div class="income-section">
-    <label for="income">あなたの年収（円）:</label>
-    <input type="number" id="income" placeholder="例：5000000" />
+  <!-- ユーザー情報登録 -->
+  <div class="form-group">
+    <label>ニックネーム: <input type="text" id="nickname"></label>
+    <label>年収(円): <input type="number" id="income" placeholder="例: 5000000"></label><br>
+    <label>国: <input type="text" id="country"></label>
+    <label>都道府県: <input type="text" id="prefecture"></label>
+    <label>地域: <input type="text" id="region"></label>
+    <button class="save-button" onclick="saveUserInfo()">保存</button>
   </div>
 
-  <div class="location-section">
-    <label for="nickname">ニックネーム:</label>
-    <input type="text" id="nickname" placeholder="例：ムダキング" />
-    <br />
-    <label for="country">国:</label>
-    <input type="text" id="country" placeholder="例：日本" />
-    <br />
-    <label for="region">地域（都道府県など）:</label>
-    <input type="text" id="region" placeholder="例：大阪府" />
+  <!-- MUDA Indexと回数 -->
+  <div>
+    <p class="status">あなたの無駄：<span id="muda-count">0</span> 回</p>
+    <p><strong>MUDA Index:</strong> <span id="muda-index">--</span>%</p>
   </div>
 
-  <div class="muda-index-display">
-    MUDA Index: <span id="muda-index">--</span>%
+  <!-- 課金ボタン群 -->
+  <div class="form-group">
+    <button class="fire-button" onclick="ignite(1)">$1</button>
+    <button class="fire-button" onclick="ignite(10)">$10</button>
+    <button class="fire-button" onclick="ignite(100)">$100</button>
+    <button class="fire-button" onclick="ignite(1000)">$1000</button>
+    <input type="number" id="custom-amount" placeholder="任意金額 ($)">
+    <button class="fire-button" onclick="igniteCustom()">任意課金</button>
   </div>
 
-  <div class="buttons">
-    <button class="fire-button" onclick="ignite(1)">🔥 $1 課金</button>
-    <button class="fire-button" onclick="ignite(10)">🔥 $10 課金</button>
-    <button class="fire-button" onclick="ignite(100)">🔥 $100 課金</button>
-    <button class="fire-button" onclick="ignite(1000)">🔥 $1000 課金</button>
-    <input type="number" id="customAmount" placeholder="任意の$金額" />
-    <button class="fire-button" onclick="customIgnite()">🔥 任意課金</button>
-  </div>
+  <!-- MUDA履歴 -->
+  <div class="history" id="history-log"></div>
 
-  <div id="history">
-    <h3>MUDA履歴:</h3>
-    <ul id="historyList"></ul>
-  </div>
+  <!-- ランキング -->
+  <div class="ranking-section">
+    <h2>地域別ランキング（デモ）</h2>
+    <label>分類:
+      <select id="rank-type">
+        <option value="total">総課金額</option>
+        <option value="index">MUDA Index</option>
+      </select>
+    </label>
+    <label>期間:
+      <select id="rank-period">
+        <option value="day">日間</option>
+        <option value="week">週間</option>
+        <option value="month">月間</option>
+        <option value="year">年間</option>
+        <option value="all">累計</option>
+      </select>
+    </label>
+    <button onclick="renderRanking()">ランキング更新</button>
 
-  <div class="ranking">
-    <h2>世界ランキング（仮）</h2>
-    <ol>
-      <li>ムダキング（日本・大阪府） - $5000</li>
-      <li>Heat Samurai（日本・東京） - $3200</li>
-      <li>Blaze Queen（アメリカ・CA） - $3100</li>
-    </ol>
-
-    <h2>地域別ランキング（仮）</h2>
-    <ol>
-      <li>大阪府 - $5000</li>
-      <li>東京都 - $3200</li>
-      <li>兵庫県 - $1800</li>
-    </ol>
+    <table class="ranking-table" id="ranking-table"></table>
   </div>
 
   <audio id="burn-sound" src="burn.mp3"></audio>
 
   <script>
-    let totalMuda = 0;
-    let history = [];
+    const user = JSON.parse(localStorage.getItem("userInfo") || '{}');
+    const history = JSON.parse(localStorage.getItem("mudaHistory") || '[]');
 
-    function updateMudaIndex() {
-      const income = parseFloat(document.getElementById("income").value);
-      const index = income > 0 ? ((totalMuda / income) * 100).toFixed(2) : "--";
-      document.getElementById("muda-index").textContent = index;
-    }
-
-    function addHistory(amount) {
-      const now = new Date().toLocaleString();
-      const entry = `${now} - $${amount} 課金🔥`;
-      history.push(entry);
-      if (history.length > 20) history.shift();
-      const list = document.getElementById("historyList");
-      list.innerHTML = history.map(item => `<li>${item}</li>`).join('');
+    function saveUserInfo() {
+      const data = {
+        nickname: document.getElementById("nickname").value,
+        income: Number(document.getElementById("income").value),
+        country: document.getElementById("country").value,
+        prefecture: document.getElementById("prefecture").value,
+        region: document.getElementById("region").value
+      };
+      localStorage.setItem("userInfo", JSON.stringify(data));
+      alert("保存しました");
     }
 
     function ignite(amount) {
-      totalMuda += amount;
-      updateMudaIndex();
-      addHistory(amount);
-      document.getElementById("burn-sound").play();
+      const count = Number(localStorage.getItem("mudaCount") || 0) + 1;
+      localStorage.setItem("mudaCount", count);
+      document.getElementById("muda-count").innerText = count;
+
+      const totalUSD = Number(localStorage.getItem("mudaTotal") || 0) + amount;
+      localStorage.setItem("mudaTotal", totalUSD);
+
+      const income = JSON.parse(localStorage.getItem("userInfo") || '{}').income || 0;
+      const index = income > 0 ? ((totalUSD * 150) / income * 100).toFixed(4) : '--';
+      document.getElementById("muda-index").innerText = index;
+
+      // 効果音
+      const audio = document.getElementById("burn-sound");
+      if (audio) audio.play();
+
+      // 履歴記録
+      const time = new Date().toLocaleString();
+      history.push({ amount, time });
+      localStorage.setItem("mudaHistory", JSON.stringify(history));
+      updateHistory();
     }
 
-    function customIgnite() {
-      const amount = parseFloat(document.getElementById("customAmount").value);
-      if (!isNaN(amount) && amount > 0) {
-        ignite(amount);
+    function igniteCustom() {
+      const val = Number(document.getElementById("custom-amount").value);
+      if (val > 0) ignite(val);
+    }
+
+    function updateHistory() {
+      const h = JSON.parse(localStorage.getItem("mudaHistory") || '[]');
+      const log = h.map(x => `${x.time}：$${x.amount}`).reverse().join('<br>');
+      document.getElementById("history-log").innerHTML = log;
+    }
+
+    function renderRanking() {
+      const users = [
+        { name: "あなた", total: Number(localStorage.getItem("mudaTotal") || 0), index: Number(document.getElementById("muda-index").innerText || 0) },
+        { name: "Alice", total: 250, index: 0.75 },
+        { name: "Bob", total: 90, index: 1.35 },
+        { name: "Carol", total: 600, index: 0.45 }
+      ];
+      const type = document.getElementById("rank-type").value;
+      users.sort((a, b) => type === 'total' ? b.total - a.total : b.index - a.index);
+
+      const rows = users.map((u, i) =>
+        `<tr class="${u.name === 'あなた' ? 'highlight' : ''}"><td>${i + 1}</td><td>${u.name}</td><td>$${u.total}</td><td>${u.index}%</td></tr>`
+      );
+      document.getElementById("ranking-table").innerHTML = `
+        <tr><th>順位</th><th>名前</th><th>総課金額</th><th>MUDA Index</th></tr>
+        ${rows.join('')}`;
+    }
+
+    // 初期化
+    window.onload = () => {
+      if (user.nickname) document.getElementById("nickname").value = user.nickname;
+      if (user.income) document.getElementById("income").value = user.income;
+      if (user.country) document.getElementById("country").value = user.country;
+      if (user.prefecture) document.getElementById("prefecture").value = user.prefecture;
+      if (user.region) document.getElementById("region").value = user.region;
+
+      const count = Number(localStorage.getItem("mudaCount") || 0);
+      document.getElementById("muda-count").innerText = count;
+
+      const total = Number(localStorage.getItem("mudaTotal") || 0);
+      const income = user.income || 0;
+      if (income > 0) {
+        const index = ((total * 150) / income * 100).toFixed(4);
+        document.getElementById("muda-index").innerText = index;
       }
+      updateHistory();
     }
   </script>
 </body>
