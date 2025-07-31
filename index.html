@@ -2,193 +2,209 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>MUDA｜Needless Funding Tournament</title>
+  <title>NFT｜Needless Funding Tournament</title>
   <style>
     body {
-      font-family: sans-serif;
-      background: #fffbe8;
-      padding: 2rem;
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 2em;
     }
     h1 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
+      font-size: 2em;
+      margin-bottom: 0.5em;
     }
-    .form-group, .income-section, .ranking-section {
-      margin-bottom: 1rem;
+    .section {
+      margin: 1em auto;
+      padding: 1em;
+      max-width: 600px;
+      background: #fff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border-radius: 10px;
     }
-    .fire-button, .save-button {
-      font-size: 1.2rem;
-      padding: 0.5rem 1rem;
-      margin-right: 5px;
-    }
-    .ranking-table {
-      border-collapse: collapse;
-      width: 100%;
-      margin-top: 1rem;
-    }
-    .ranking-table th, .ranking-table td {
-      border: 1px solid #ccc;
-      padding: 0.5rem;
-      text-align: left;
-    }
-    .highlight {
-      background-color: #ffe8a8;
+    label {
+      display: block;
+      margin-top: 1em;
       font-weight: bold;
     }
-    .history {
-      margin-top: 1rem;
-      font-size: 0.9rem;
-      max-height: 200px;
-      overflow-y: auto;
-      background: #f5f5f5;
-      padding: 0.5rem;
+    input {
+      margin: 0.5em 0;
+      padding: 0.5em;
+      width: 90%;
+    }
+    button {
+      margin: 0.5em;
+      padding: 0.7em 1.2em;
+      font-size: 1em;
+      border: none;
+      border-radius: 5px;
+      background-color: #ff5c5c;
+      color: white;
+      cursor: pointer;
+    }
+    .flame {
+      animation: floatUp 2s ease-out;
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(-100px); opacity: 0; }
+    }
+    .rank-table {
+      width: 100%;
+      font-size: 0.9em;
+      border-collapse: collapse;
+      margin-top: 1em;
+    }
+    .rank-table th, .rank-table td {
       border: 1px solid #ccc;
+      padding: 0.3em 0.5em;
+    }
+    .rank-highlight {
+      background-color: #ffffcc;
+    }
+    .log-entry {
+      font-size: 0.8em;
+      margin-top: 0.2em;
     }
   </style>
 </head>
 <body>
-  <h1>MUDA｜Needless Funding Tournament</h1>
-
-  <!-- ユーザー情報登録 -->
-  <div class="form-group">
-    <label>ニックネーム: <input type="text" id="nickname"></label>
-    <label>年収(円): <input type="number" id="income" placeholder="例: 5000000"></label><br>
-    <label>国: <input type="text" id="country"></label>
-    <label>都道府県: <input type="text" id="prefecture"></label>
-    <label>地域: <input type="text" id="region"></label>
-    <button class="save-button" onclick="saveUserInfo()">保存</button>
+  <h1>NFT｜Needless Funding Tournament</h1>
+  <div class="section">
+    <label>あなたの年収（円）:</label>
+    <input id="income" type="number" placeholder="例：5000000">
+    <label>国:</label>
+    <input id="country" type="text" placeholder="例：日本">
+    <label>都道府県:</label>
+    <input id="prefecture" type="text" placeholder="例：大阪府">
+    <label>詳細地域（市区町村）:</label>
+    <input id="region" type="text" placeholder="例：茨木市">
+    <button onclick="saveProfile()">保存</button>
   </div>
 
-  <!-- MUDA Indexと回数 -->
-  <div>
-    <p class="status">あなたの無駄：<span id="muda-count">0</span> 回</p>
+  <div class="section">
+    <p id="status">あなたの無駄：0 回</p>
     <p><strong>MUDA Index:</strong> <span id="muda-index">--</span>%</p>
+    <button onclick="ignite(1)">$1</button>
+    <button onclick="ignite(10)">$10</button>
+    <button onclick="ignite(100)">$100</button>
+    <button onclick="ignite(1000)">$1000</button>
+    <input id="customAmount" type="number" placeholder="任意の金額($)">
+    <button onclick="igniteCustom()">任意課金</button>
   </div>
 
-  <!-- 課金ボタン群 -->
-  <div class="form-group">
-    <button class="fire-button" onclick="ignite(1)">$1</button>
-    <button class="fire-button" onclick="ignite(10)">$10</button>
-    <button class="fire-button" onclick="ignite(100)">$100</button>
-    <button class="fire-button" onclick="ignite(1000)">$1000</button>
-    <input type="number" id="custom-amount" placeholder="任意金額 ($)">
-    <button class="fire-button" onclick="igniteCustom()">任意課金</button>
+  <div class="section">
+    <details>
+      <summary><strong>MUDA履歴</strong></summary>
+      <div id="muda-log"></div>
+    </details>
   </div>
 
-  <!-- MUDA履歴 -->
-  <div class="history" id="history-log"></div>
-
-  <!-- ランキング -->
-  <div class="ranking-section">
-    <h2>地域別ランキング（デモ）</h2>
-    <label>分類:
-      <select id="rank-type">
-        <option value="total">総課金額</option>
-        <option value="index">MUDA Index</option>
-      </select>
-    </label>
-    <label>期間:
-      <select id="rank-period">
-        <option value="day">日間</option>
-        <option value="week">週間</option>
-        <option value="month">月間</option>
-        <option value="year">年間</option>
-        <option value="all">累計</option>
-      </select>
-    </label>
-    <button onclick="renderRanking()">ランキング更新</button>
-
-    <table class="ranking-table" id="ranking-table"></table>
+  <div class="section">
+    <details open>
+      <summary><strong>地域別ランキング（例）</strong></summary>
+      <table class="rank-table">
+        <thead><tr><th>順位</th><th>ニックネーム</th><th>金額($)</th><th>MUDA Index</th></tr></thead>
+        <tbody id="ranking-body">
+          <tr><td>1</td><td>あなた</td><td id="rank-total">--</td><td id="rank-index">--%</td></tr>
+        </tbody>
+      </table>
+    </details>
   </div>
 
   <audio id="burn-sound" src="burn.mp3"></audio>
 
   <script>
-    const user = JSON.parse(localStorage.getItem("userInfo") || '{}');
-    const history = JSON.parse(localStorage.getItem("mudaHistory") || '[]');
+    let totalMuda = 0;
+    let mudaCount = 0;
 
-    function saveUserInfo() {
-      const data = {
-        nickname: document.getElementById("nickname").value,
-        income: Number(document.getElementById("income").value),
-        country: document.getElementById("country").value,
-        prefecture: document.getElementById("prefecture").value,
-        region: document.getElementById("region").value
-      };
-      localStorage.setItem("userInfo", JSON.stringify(data));
-      alert("保存しました");
+    window.onload = () => {
+      const income = localStorage.getItem('income');
+      const country = localStorage.getItem('country');
+      const prefecture = localStorage.getItem('prefecture');
+      const region = localStorage.getItem('region');
+      if (income) document.getElementById("income").value = income;
+      if (country) document.getElementById("country").value = country;
+      if (prefecture) document.getElementById("prefecture").value = prefecture;
+      if (region) document.getElementById("region").value = region;
+      totalMuda = Number(localStorage.getItem('totalMuda') || 0);
+      mudaCount = Number(localStorage.getItem('mudaCount') || 0);
+      document.getElementById("status").innerText = `あなたの無駄：${mudaCount} 回`;
+      updateIndex();
+      updateLog();
+    };
+
+    function saveProfile() {
+      localStorage.setItem('income', document.getElementById("income").value);
+      localStorage.setItem('country', document.getElementById("country").value);
+      localStorage.setItem('prefecture', document.getElementById("prefecture").value);
+      localStorage.setItem('region', document.getElementById("region").value);
+      alert("保存されました！");
     }
 
     function ignite(amount) {
-      const count = Number(localStorage.getItem("mudaCount") || 0) + 1;
-      localStorage.setItem("mudaCount", count);
-      document.getElementById("muda-count").innerText = count;
+      // flame effect
+      for (let i = 0; i < 5; i++) {
+        const flame = document.createElement('div');
+        flame.className = 'flame';
+        flame.innerText = '🔥';
+        flame.style.position = 'absolute';
+        flame.style.left = `${Math.random() * 90 + 5}%`;
+        flame.style.top = `${Math.random() * 80 + 10}%`;
+        flame.style.fontSize = `${Math.random() * 40 + 30}px`;
+        flame.style.opacity = '0.8';
+        document.body.appendChild(flame);
+        setTimeout(() => flame.remove(), 2000);
+      }
 
-      const totalUSD = Number(localStorage.getItem("mudaTotal") || 0) + amount;
-      localStorage.setItem("mudaTotal", totalUSD);
-
-      const income = JSON.parse(localStorage.getItem("userInfo") || '{}').income || 0;
-      const index = income > 0 ? ((totalUSD * 150) / income * 100).toFixed(4) : '--';
-      document.getElementById("muda-index").innerText = index;
-
-      // 効果音
+      // sound
       const audio = document.getElementById("burn-sound");
-      if (audio) audio.play();
+      if (audio) {
+        audio.currentTime = 0;
+        audio.play().catch(err => console.log("音声エラー:", err));
+      }
 
-      // 履歴記録
-      const time = new Date().toLocaleString();
-      history.push({ amount, time });
-      localStorage.setItem("mudaHistory", JSON.stringify(history));
-      updateHistory();
+      // background flash
+      document.body.style.transition = 'background-color 0.2s';
+      document.body.style.backgroundColor = '#ffdddd';
+      setTimeout(() => document.body.style.backgroundColor = '', 300);
+
+      // update stats
+      mudaCount++;
+      totalMuda += amount;
+      localStorage.setItem('mudaCount', mudaCount);
+      localStorage.setItem('totalMuda', totalMuda);
+      document.getElementById("status").innerText = `あなたの無駄：${mudaCount} 回`;
+      updateIndex();
+      updateLog(amount);
     }
 
     function igniteCustom() {
-      const val = Number(document.getElementById("custom-amount").value);
+      const val = Number(document.getElementById("customAmount").value);
       if (val > 0) ignite(val);
     }
 
-    function updateHistory() {
-      const h = JSON.parse(localStorage.getItem("mudaHistory") || '[]');
-      const log = h.map(x => `${x.time}：$${x.amount}`).reverse().join('<br>');
-      document.getElementById("history-log").innerHTML = log;
+    function updateIndex() {
+      const income = Number(localStorage.getItem('income')) || 0;
+      const mudaIndex = income > 0 ? ((totalMuda / income) * 100).toFixed(4) : '--';
+      document.getElementById("muda-index").innerText = mudaIndex;
+      document.getElementById("rank-total").innerText = `$${totalMuda}`;
+      document.getElementById("rank-index").innerText = `${mudaIndex}%`;
     }
 
-    function renderRanking() {
-      const users = [
-        { name: "あなた", total: Number(localStorage.getItem("mudaTotal") || 0), index: Number(document.getElementById("muda-index").innerText || 0) },
-        { name: "Alice", total: 250, index: 0.75 },
-        { name: "Bob", total: 90, index: 1.35 },
-        { name: "Carol", total: 600, index: 0.45 }
-      ];
-      const type = document.getElementById("rank-type").value;
-      users.sort((a, b) => type === 'total' ? b.total - a.total : b.index - a.index);
-
-      const rows = users.map((u, i) =>
-        `<tr class="${u.name === 'あなた' ? 'highlight' : ''}"><td>${i + 1}</td><td>${u.name}</td><td>$${u.total}</td><td>${u.index}%</td></tr>`
-      );
-      document.getElementById("ranking-table").innerHTML = `
-        <tr><th>順位</th><th>名前</th><th>総課金額</th><th>MUDA Index</th></tr>
-        ${rows.join('')}`;
-    }
-
-    // 初期化
-    window.onload = () => {
-      if (user.nickname) document.getElementById("nickname").value = user.nickname;
-      if (user.income) document.getElementById("income").value = user.income;
-      if (user.country) document.getElementById("country").value = user.country;
-      if (user.prefecture) document.getElementById("prefecture").value = user.prefecture;
-      if (user.region) document.getElementById("region").value = user.region;
-
-      const count = Number(localStorage.getItem("mudaCount") || 0);
-      document.getElementById("muda-count").innerText = count;
-
-      const total = Number(localStorage.getItem("mudaTotal") || 0);
-      const income = user.income || 0;
-      if (income > 0) {
-        const index = ((total * 150) / income * 100).toFixed(4);
-        document.getElementById("muda-index").innerText = index;
+    function updateLog(latestAmount) {
+      const logEl = document.getElementById("muda-log");
+      if (!logEl) return;
+      if (latestAmount) {
+        const time = new Date().toLocaleString();
+        const entry = document.createElement("div");
+        entry.className = 'log-entry';
+        entry.innerText = `${time} - $${latestAmount}`;
+        logEl.prepend(entry);
+      } else {
+        logEl.innerHTML = "";
       }
-      updateHistory();
     }
   </script>
 </body>
