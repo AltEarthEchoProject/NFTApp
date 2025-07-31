@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>NFT｜Needless Funding Tournament</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 20px;
+      background-color: #fff;
+      color: #333;
+    }
+    h1 {
+      font-size: 28px;
+      color: #c0392b;
+    }
+    .fire-button {
+      font-size: 18px;
+      padding: 10px 20px;
+      margin: 5px;
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .income-section, .location-section {
+      margin: 20px 0;
+    }
+    .muda-index-display {
+      margin: 15px 0;
+      font-weight: bold;
+    }
+    #history {
+      margin-top: 20px;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+    .ranking {
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <h1>NFT｜Needless Funding Tournament</h1>
+
+  <div class="income-section">
+    <label for="income">あなたの年収（円）:</label>
+    <input type="number" id="income" placeholder="例：5000000" />
+  </div>
+
+  <div class="location-section">
+    <label for="nickname">ニックネーム:</label>
+    <input type="text" id="nickname" placeholder="例：ムダキング" />
+    <br />
+    <label for="country">国:</label>
+    <input type="text" id="country" placeholder="例：日本" />
+    <br />
+    <label for="region">地域（都道府県など）:</label>
+    <input type="text" id="region" placeholder="例：大阪府" />
+  </div>
+
+  <div class="muda-index-display">
+    MUDA Index: <span id="muda-index">--</span>%
+  </div>
+
+  <div class="buttons">
+    <button class="fire-button" onclick="ignite(1)">🔥 $1 課金</button>
+    <button class="fire-button" onclick="ignite(10)">🔥 $10 課金</button>
+    <button class="fire-button" onclick="ignite(100)">🔥 $100 課金</button>
+    <button class="fire-button" onclick="ignite(1000)">🔥 $1000 課金</button>
+    <input type="number" id="customAmount" placeholder="任意の$金額" />
+    <button class="fire-button" onclick="customIgnite()">🔥 任意課金</button>
+  </div>
+
+  <div id="history">
+    <h3>MUDA履歴:</h3>
+    <ul id="historyList"></ul>
+  </div>
+
+  <div class="ranking">
+    <h2>世界ランキング（仮）</h2>
+    <ol>
+      <li>ムダキング（日本・大阪府） - $5000</li>
+      <li>Heat Samurai（日本・東京） - $3200</li>
+      <li>Blaze Queen（アメリカ・CA） - $3100</li>
+    </ol>
+
+    <h2>地域別ランキング（仮）</h2>
+    <ol>
+      <li>大阪府 - $5000</li>
+      <li>東京都 - $3200</li>
+      <li>兵庫県 - $1800</li>
+    </ol>
+  </div>
+
+  <audio id="burn-sound" src="burn.mp3"></audio>
+
+  <script>
+    let totalMuda = 0;
+    let history = [];
+
+    function updateMudaIndex() {
+      const income = parseFloat(document.getElementById("income").value);
+      const index = income > 0 ? ((totalMuda / income) * 100).toFixed(2) : "--";
+      document.getElementById("muda-index").textContent = index;
+    }
+
+    function addHistory(amount) {
+      const now = new Date().toLocaleString();
+      const entry = `${now} - $${amount} 課金🔥`;
+      history.push(entry);
+      if (history.length > 20) history.shift();
+      const list = document.getElementById("historyList");
+      list.innerHTML = history.map(item => `<li>${item}</li>`).join('');
+    }
+
+    function ignite(amount) {
+      totalMuda += amount;
+      updateMudaIndex();
+      addHistory(amount);
+      document.getElementById("burn-sound").play();
+    }
+
+    function customIgnite() {
+      const amount = parseFloat(document.getElementById("customAmount").value);
+      if (!isNaN(amount) && amount > 0) {
+        ignite(amount);
+      }
+    }
+  </script>
+</body>
+</html>
