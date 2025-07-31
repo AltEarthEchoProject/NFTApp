@@ -46,5 +46,15 @@ function ignite() {
     const count = Number(localStorage.getItem('mudaCount') || 0) + 1;
     localStorage.setItem('mudaCount', count);
     status.innerText = `あなたの無駄：${count} 回`;
+        // 💰 MUDA Index計算と表示
+    const incomeValue = Number(localStorage.getItem('userIncome') || 0);
+    if (incomeValue > 0) {
+      const total = count * 100; // 1回あたり100円の課金と仮定
+      const mudaIndex = ((total / incomeValue) * 100).toFixed(4);
+      const mudaDisplay = document.getElementById("muda-index");
+      if (mudaDisplay) {
+        mudaDisplay.innerText = `${mudaIndex}%`;
+      }
+    }
   }, 2000);
 }
