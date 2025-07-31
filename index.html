@@ -7,20 +7,114 @@
 </head>
 <body>
   <h1>NFT｜Needless Funding Tournament</h1>
-  <p class="status">あなたの無駄：0 回</p><!-- 年収入力エリア -->
-<div class="income-section">
-  <label for="income">あなたの年収（円）:</label>
-  <input type="number" id="income" placeholder="例：5000000" />
-</div>
 
-<!-- MUDA Index 表示 -->
-<div class="muda-index-display">
-  <strong>MUDA Index:</strong> <span id="muda-index">--</span>%
-</div>
+  <!-- ステータス表示 -->
+  <p class="status">あなたの無駄：0 回</p>
 
+  <!-- 年収入力エリア -->
+  <div class="income-section">
+    <label for="income">あなたの年収（円）:</label>
+    <input type="number" id="income" placeholder="例：5000000" />
+    <button onclick="saveIncome()">保存</button>
+  </div>
+
+  <!-- MUDA Index 表示 -->
+  <div class="muda-index-display">
+    <strong>MUDA Index:</strong> <span id="muda-index">--</span>%
+  </div>
+
+  <!-- MUDA課金ボタン -->
   <button class="fire-button" onclick="ignite()">🔥 MUDA課金 🔥</button>
 
-  <script src="script.js"></script>
+  <!-- 効果音 -->
   <audio id="burn-sound" src="burn.mp3"></audio>
+
+  <!-- スクリプト -->
+  <script>
+    function ignite() {
+      const button = document.querySelector('.fire-button');
+      const status = document.querySelector('.status');
+
+      // 🔥 炎エフェクト追加
+      for (let i = 0; i < 5; i++) {
+        const flame = document.createElement('div');
+        flame.className = 'flame';
+        flame.innerText = '🔥';
+        flame.style.position = 'absolute';
+        flame.style.left = `${Math.random() * 90 + 5}%`;
+        flame.style.top = `${Math.random() * 80 + 10}%`;
+        flame.style.fontSize = `${Math.random() * 40 + 30}px`;
+        flame.style.opacity = '0.8';
+        document.body.appendChild(flame);
+
+        setTimeout(() => {
+          flame.remove();
+        }, 2000);
+      }
+
+      // 🔊 効果音再生
+      const audio = document.getElementById("burn-sound");
+      if (audio) {
+        audio.currentTime = 0;
+        audio.play().catch((error) => {
+          console.log("音声の再生に失敗しました:", error);
+        });
+      }
+
+      // 🔴 背景フラッシュ
+      document.body.style.transition = 'background-color 0.2s';
+      document.body.style.backgroundColor = '#ffdddd';
+      setTimeout(() => {
+        document.body.style.backgroundColor = '';
+      }, 300);
+
+      // ボタン無効化
+      button.disabled = true;
+      status.innerText = '燃やしています…（Needless Funding）';
+
+      // ✅ 演出後にMUDAカウントとIndex更新
+      setTimeout(() => {
+        button.disabled = false;
+        const count = Number(localStorage.getItem('mudaCount') || 0) + 1;
+        localStorage.setItem('mudaCount', count);
+        status.innerText = `あなたの無駄：${count} 回`;
+
+        const incomeValue = Number(localStorage.getItem('userIncome') || 0);
+        if (incomeValue > 0) {
+          const total = count * 100; // 1回100円と仮定
+          const mudaIndex = ((total / incomeValue) * 100).toFixed(4);
+          const mudaDisplay = document.getElementById("muda-index");
+          if (mudaDisplay) {
+            mudaDisplay.innerText = `${mudaIndex}`;
+          }
+        }
+      }, 2000);
+    }
+
+    function saveIncome() {
+      const income = Number(document.getElementById("income").value);
+      if (income > 0) {
+        localStorage.setItem('userIncome', income);
+        alert("年収が保存されました！");
+      } else {
+        alert("正しい年収を入力してください。");
+      }
+    }
+
+    // ページ読み込み時に情報復元
+    window.onload = () => {
+      const savedIncome = localStorage.getItem('userIncome');
+      if (savedIncome) {
+        document.getElementById("income").value = savedIncome;
+        const count = Number(localStorage.getItem('mudaCount') || 0);
+        const total = count * 100;
+        const mudaIndex = ((total / savedIncome) * 100).toFixed(4);
+        document.getElementById("muda-index").innerText = mudaIndex;
+      }
+
+      const count = Number(localStorage.getItem('mudaCount') || 0);
+      document.querySelector(".status").innerText = `あなたの無駄：${count} 回`;
+    };
+  </script>
 </body>
 </html>
