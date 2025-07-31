@@ -1,167 +1,113 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>NFT｜Needless Funding Tournament</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NFT | Needless Funding Tournament</title>
   <style>
     body {
-      font-family: "Arial", sans-serif;
-      background-color: #fffaf0;
+      font-family: 'Helvetica Neue', sans-serif;
+      text-align: center;
+      background-color: #fff8f0;
       margin: 0;
       padding: 20px;
-      text-align: center;
     }
     h1 {
-      font-size: 1.8em;
+      font-size: 28px;
     }
-    .fire-button {
-      padding: 15px 30px;
+    #countDisplay {
       font-size: 20px;
+      margin-top: 10px;
+    }
+    .muda-button {
       background-color: crimson;
       color: white;
+      font-size: 20px;
+      padding: 16px 40px;
+      margin: 20px;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       cursor: pointer;
-      margin-top: 20px;
     }
-    .fire-button:disabled {
-      background-color: gray;
-      cursor: not-allowed;
+    .muda-button:hover {
+      background-color: darkred;
     }
-    .status, .muda-index-display, .history, .ranking {
-      margin: 15px 0;
+    #history {
+      margin-top: 30px;
+      max-width: 300px;
+      margin-left: auto;
+      margin-right: auto;
     }
-    .flame {
-      animation: fadeout 2s forwards;
+    #ranking {
+      margin-top: 30px;
     }
-    @keyframes fadeout {
-      0% {opacity: 0.8;}
-      100% {opacity: 0;}
-    }
-    .history {
-      max-height: 100px;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      padding: 10px;
-      background-color: #fff;
-      font-size: 14px;
+    .badge {
+      font-weight: bold;
+      color: orange;
     }
   </style>
 </head>
 <body>
+  <h1>NFT | Needless Funding Tournament</h1>
+  <div id="countDisplay">あなたの無駄：<span id="count">0</span> 回</div>
 
-  <h1>NFT｜Needless Funding Tournament</h1>
-  <p class="status">あなたの無駄：0 回</p>
+  <div style="margin-top: 10px;">
+    あなたの年収（円）：<input type="number" id="income" value="2000000" />
+  </div>
+  <div id="mudaIndex">MUDA Index: <span id="indexValue">0%</span></div>
 
-  <!-- 年収入力 -->
-  <div>
-    <label for="income">あなたの年収（円）:</label>
-    <input type="number" id="income" placeholder="例：5000000">
+  <button class="muda-button" onclick="addMuda()">🔥 MUDA課金 🔥</button>
+
+  <div id="history">
+    <h3>MUDA履歴:</h3>
+    <ul id="historyList"></ul>
   </div>
 
-  <!-- MUDA Index -->
-  <div class="muda-index-display">
-    <strong>MUDA Index:</strong> <span id="muda-index">--</span>%
+  <div id="ranking">
+    <h3>ランキング（仮）</h3>
+    🌍世界1位：BurnMaster999（<span id="worldCount">999</span>回）<br>
+    🇯🇵日本1位：Kaichiro（<span id="japanCount">123</span>回）<br>
+    🏡地域1位：You（今ここ）<br>
   </div>
 
-  <!-- MUDA課金ボタン -->
-  <button class="fire-button" onclick="ignite()">🔥 MUDA課金 🔥</button>
-
-  <!-- MUDA履歴 -->
-  <div class="history" id="history">
-    <strong>MUDA履歴:</strong><br>
-    （履歴はここに表示されます）
-  </div>
-
-  <!-- 仮ランキング -->
-  <div class="ranking">
-    <strong>ランキング（仮）</strong><br>
-    🌏 世界1位：BurnMaster999（999回）<br>
-    🇯🇵 日本1位：Kaichiro（123回）<br>
-    🏡 地域1位：You（今ここ）<br>
-  </div>
-
-  <audio id="burn-sound" src="burn.mp3" preload="auto"></audio>
+  <div id="titleBadge" class="badge"></div>
 
   <script>
-    function ignite() {
-      const button = document.querySelector('.fire-button');
-      const status = document.querySelector('.status');
-      const incomeInput = document.getElementById("income");
-      const mudaIndexDisplay = document.getElementById("muda-index");
-      const historyDiv = document.getElementById("history");
+    let count = 0;
+    const historyList = document.getElementById("historyList");
 
-      // 🔥 炎エフェクト
-      for (let i = 0; i < 5; i++) {
-        const flame = document.createElement('div');
-        flame.className = 'flame';
-        flame.innerText = '🔥';
-        flame.style.position = 'absolute';
-        flame.style.left = `${Math.random() * 90 + 5}%`;
-        flame.style.top = `${Math.random() * 80 + 10}%`;
-        flame.style.fontSize = `${Math.random() * 30 + 30}px`;
-        flame.style.opacity = '0.8';
-        document.body.appendChild(flame);
-        setTimeout(() => flame.remove(), 2000);
+    function updateIndex() {
+      const income = parseFloat(document.getElementById("income").value);
+      const mudaIndex = (count / (income / 100000)) * 100;
+      document.getElementById("indexValue").innerText = mudaIndex.toFixed(1) + "%";
+    }
+
+    function updateTitleBadge() {
+      const badge = document.getElementById("titleBadge");
+      if (count >= 200) badge.innerText = "👑 MUDA帝王 👑";
+      else if (count >= 100) badge.innerText = "🔥 Burn King 🔥";
+      else if (count >= 50) badge.innerText = "💸 MUDA王子 💸";
+      else if (count >= 20) badge.innerText = "🧯浪費貴族 🧯";
+      else badge.innerText = "";
+    }
+
+    function addMuda() {
+      count++;
+      document.getElementById("count").innerText = count;
+      const now = new Date();
+      const timeStr = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`;
+      const entry = document.createElement("li");
+      entry.textContent = `🔥 ${timeStr} - MUDA ${count}回目`;
+      historyList.insertBefore(entry, historyList.firstChild);
+      if (historyList.children.length > 10) {
+        historyList.removeChild(historyList.lastChild);
       }
-
-      // 🔊 音声再生（スマホ対策）
-      try {
-        const audio = document.getElementById("burn-sound");
-        audio.currentTime = 0;
-        audio.play().catch(() => {});
-      } catch {}
-
-      // 🔴 背景フラッシュ
-      document.body.style.transition = 'background-color 0.2s';
-      document.body.style.backgroundColor = '#ffdddd';
-      setTimeout(() => {
-        document.body.style.backgroundColor = '';
-      }, 300);
-
-      // ⛔ ボタン無効化
-      button.disabled = true;
-
-      // MUDA Index計算
-      const income = parseInt(incomeInput.value || "0");
-      const count = Number(localStorage.getItem('mudaCount') || 0) + 1;
-      localStorage.setItem('mudaCount', count);
-      const index = income ? Math.min((count * 100000 / income) * 100, 999).toFixed(1) : '--';
-      mudaIndexDisplay.innerText = isNaN(index) ? '--' : index;
-
-      // 状態表示
-      status.innerText = '燃やしています…（Needless Funding）';
-
-      // 履歴追加（最大20件）
-      let log = JSON.parse(localStorage.getItem('mudaLog') || "[]");
-      const now = new Date().toLocaleString();
-      log.unshift(`🔥 ${now} - MUDA ${count}回目`);
-      if (log.length > 20) log = log.slice(0, 20);
-      localStorage.setItem('mudaLog', JSON.stringify(log));
-
-      // 反映
-      setTimeout(() => {
-        button.disabled = false;
-        button.blur();
-        status.innerText = `あなたの無駄：${count} 回`;
-        historyDiv.innerHTML = "<strong>MUDA履歴:</strong><br>" + log.map(l => l).join("<br>");
-      }, 2000);
+      updateIndex();
+      updateTitleBadge();
     }
 
-    // 初期化
-    window.onload = () => {
-      const count = Number(localStorage.getItem('mudaCount') || 0);
-      document.querySelector('.status').innerText = `あなたの無駄：${count} 回`;
-
-      const log = JSON.parse(localStorage.getItem('mudaLog') || "[]");
-      document.getElementById("history").innerHTML = "<strong>MUDA履歴:</strong><br>" + log.map(l => l).join("<br>");
-
-      const income = parseInt(document.getElementById("income").value || "0");
-      const index = income ? Math.min((count * 100000 / income) * 100, 999).toFixed(1) : '--';
-      document.getElementById("muda-index").innerText = isNaN(index) ? '--' : index;
-    }
+    document.getElementById("income").addEventListener("input", updateIndex);
+    updateIndex();
   </script>
-
 </body>
 </html>
