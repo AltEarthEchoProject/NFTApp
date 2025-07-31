@@ -2,108 +2,82 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>NFT｜Needless Funding Tournament</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NFT | Needless Funding Tournament</title>
   <style>
     body {
-      background-color: #fdf6e3;
       font-family: 'Helvetica Neue', sans-serif;
+      background-color: #fffaf4;
+      color: #111;
       text-align: center;
       padding: 20px;
     }
     h1 {
-      font-size: 26px;
+      font-size: 2em;
+      margin-bottom: 10px;
     }
-    .fire-button {
-      font-size: 24px;
-      padding: 12px 24px;
-      background-color: #ff4b3e;
+    input[type="number"] {
+      font-size: 1em;
+      padding: 5px;
+      margin: 10px 0;
+      width: 200px;
+    }
+    button {
+      font-size: 1.2em;
+      padding: 15px 30px;
+      background-color: #ff3c3c;
       color: white;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transition: transform 0.2s, background-color 0.3s;
+    }
+    button:hover {
+      background-color: #e02727;
+      transform: scale(1.05);
+    }
+    .muda-history {
       margin-top: 20px;
-    }
-    .income-section {
-      margin: 20px 0;
-    }
-    .muda-index-display {
-      font-weight: bold;
-      margin: 10px 0;
-    }
-    .history-list {
-      margin-top: 20px;
-      background: white;
-      padding: 10px;
-      border-radius: 10px;
-      display: inline-block;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
       text-align: left;
-      max-width: 90%;
+      background: #fff0eb;
+      border: 1px solid #e3c2b3;
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .muda-entry {
+      margin: 4px 0;
+      font-size: 0.95em;
     }
     .ranking {
       margin-top: 30px;
+      font-size: 1em;
+    }
+    .muda-index {
+      font-size: 1.2em;
+      margin: 10px 0;
       font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <h1>NFT｜Needless Funding Tournament</h1>
-  <p class="status">あなたの無駄：<span id="muda-count">0</span> 回</p>
+  <h1>NFT | Needless Funding Tournament</h1>
+  <p>あなたの無駄：<span id="muda-count">0</span> 回</p>
 
-  <div class="income-section">
-    <label for="income">あなたの年収（円）：</label>
-    <input type="number" id="income" placeholder="例：5000000">
-  </div>
+  <label for="income">あなたの年収（円）：</label>
+  <input type="number" id="income" value="2000000">
+  <p class="muda-index">MUDA Index: <span id="muda-index">0.0%</span></p>
 
-  <div class="muda-index-display">
-    <strong>MUDA Index:</strong> <span id="muda-index">--</span>%
-  </div>
+  <button id="muda-button">🔥 MUDA課金 🔥</button>
 
-  <button class="fire-button" onclick="ignite()">🔥 MUDA課金 🔥</button>
-
-  <div class="history-list" id="history-list">
+  <div class="muda-history">
     <strong>MUDA履歴:</strong>
-    <ul id="history-ul"></ul>
+    <div id="history-list"></div>
   </div>
 
   <div class="ranking">
-    <p>ランキング（仮）</p>
-    🌍 世界1位：BurnMaster999（999回）<br>
-    🇯🇵 日本1位：Kaichiro（123回）<br>
-    🏡 地域1位：You（今ここ）
-  </div>
-
-  <audio id="burn-sound" src="burn.mp3" preload="auto"></audio>
-
-  <script>
-    let mudaCount = 0;
-
-    function ignite() {
-      mudaCount++;
-      document.getElementById("muda-count").textContent = mudaCount;
-
-      // MUDA Index更新
-      const income = parseInt(document.getElementById("income").value);
-      const index = income ? ((mudaCount / income) * 100000).toFixed(1) : "--";
-      document.getElementById("muda-index").textContent = index;
-
-      // 音声再生
-      const sound = document.getElementById("burn-sound");
-      sound.currentTime = 0;
-      sound.play();
-
-      // 履歴追加（先頭に）
-      const ul = document.getElementById("history-ul");
-      const li = document.createElement("li");
-      const now = new Date();
-      const timestamp = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
-      li.textContent = `🔥 ${timestamp} - MUDA ${mudaCount}回目`;
-      ul.insertBefore(li, ul.firstChild);
-
-      // 履歴10件までに制限
-      if (ul.children.length > 10) {
-        ul.removeChild(ul.lastChild);
-      }
-    }
-  </script>
-</body>
-</html>
+    <p><strong>ランキング（仮）</strong></p>
+    <p>
