@@ -1,9 +1,30 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>NFT｜Needless Funding Tournament</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .log-entry {
+      font-size: 14px;
+      color: #333;
+    }
+    .title-section {
+      margin-top: 20px;
+    }
+    .title-section strong {
+      font-size: 18px;
+    }
+    .rank-table {
+      font-size: 13px;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    .rank-table th, .rank-table td {
+      border: 1px solid #aaa;
+      padding: 4px 8px;
+    }
+  </style>
 </head>
 <body>
   <h1>NFT｜Needless Funding Tournament</h1>
@@ -23,9 +44,27 @@
     <strong>MUDA Index:</strong> <span id="muda-index">--</span>%
   </div>
 
-  <!-- 称号 表示 -->
-  <div class="title-display">
-    <strong>あなたの称号:</strong> <span id="muda-title">--</span>
+  <!-- 称号表示 -->
+  <div class="title-section">
+    <strong>現在の称号:</strong> <span id="current-title">--</span>
+  </div>
+
+  <!-- 履歴ログ -->
+  <div class="title-section">
+    <strong>MUDA履歴:</strong>
+    <ul id="log-list"></ul>
+  </div>
+
+  <!-- 称号一覧 -->
+  <div class="title-section">
+    <strong>称号一覧:</strong>
+    <table class="rank-table">
+      <tr><th>MUDA回数</th><th>称号</th></tr>
+      <tr><td>1～4回</td><td>Waste Rookie</td></tr>
+      <tr><td>5～9回</td><td>Heat Seeker</td></tr>
+      <tr><td>10～19回</td><td>Burn King</td></tr>
+      <tr><td>20回以上</td><td>Blaze Overlord</td></tr>
+    </table>
   </div>
 
   <!-- MUDA課金ボタン -->
@@ -34,13 +73,20 @@
   <!-- 効果音 -->
   <audio id="burn-sound" src="burn.mp3"></audio>
 
-  <!-- スクリプト -->
+  <!-- JSスクリプト -->
   <script>
+    function getTitle(count) {
+      if (count >= 20) return "Blaze Overlord";
+      if (count >= 10) return "Burn King";
+      if (count >= 5) return "Heat Seeker";
+      if (count >= 1) return "Waste Rookie";
+      return "--";
+    }
+
     function ignite() {
       const button = document.querySelector('.fire-button');
       const status = document.querySelector('.status');
 
-      // 🔥 炎エフェクト追加
       for (let i = 0; i < 5; i++) {
         const flame = document.createElement('div');
         flame.className = 'flame';
@@ -54,54 +100,45 @@
         setTimeout(() => flame.remove(), 2000);
       }
 
-      // 🔊 効果音再生
       const audio = document.getElementById("burn-sound");
       if (audio) {
         audio.currentTime = 0;
-        audio.play().catch((error) => {
-          console.log("音声の再生に失敗しました:", error);
-        });
+        audio.play().catch(() => {});
       }
 
-      // 🔴 背景フラッシュ
       document.body.style.transition = 'background-color 0.2s';
       document.body.style.backgroundColor = '#ffdddd';
       setTimeout(() => {
         document.body.style.backgroundColor = '';
       }, 300);
 
-      // ボタン無効化
       button.disabled = true;
       status.innerText = '燃やしています…（Needless Funding）';
 
-      // ✅ MUDA数とIndex更新
       setTimeout(() => {
         button.disabled = false;
         const count = Number(localStorage.getItem('mudaCount') || 0) + 1;
         localStorage.setItem('mudaCount', count);
         status.innerText = `あなたの無駄：${count} 回`;
 
+        const title = getTitle(count);
+        document.getElementById("current-title").innerText = title;
+
+        const now = new Date().toLocaleString();
+        const logList = JSON.parse(localStorage.getItem("mudaLogs") || "[]");
+        logList.unshift(`${now} 🔥`);
+        localStorage.setItem("mudaLogs", JSON.stringify(logList.slice(0, 20)));
+        updateLogDisplay();
+
         const incomeValue = Number(localStorage.getItem('userIncome') || 0);
         if (incomeValue > 0) {
           const total = count * 100;
           const mudaIndex = ((total / incomeValue) * 100).toFixed(4);
-          document.getElementById("muda-index").innerText = mudaIndex;
+          const mudaDisplay = document.getElementById("muda-index");
+          if (mudaDisplay) {
+            mudaDisplay.innerText = `${mudaIndex}`;
+          }
         }
-
-        // 🎖️ 称号表示
-        const titleDisplay = document.getElementById("muda-title");
-        let title = "--";
-        if (count >= 20) {
-          title = "🔥 Blaze Overlord（炎の支配者）";
-        } else if (count >= 10) {
-          title = "🔥 Burn King（燃焼王）";
-        } else if (count >= 5) {
-          title = "🔥 Heat Seeker（火遊び中級）";
-        } else if (count >= 1) {
-          title = "🔥 Waste Rookie（ムダ初心者）";
-        }
-        titleDisplay.innerText = title;
-
       }, 2000);
     }
 
@@ -115,32 +152,32 @@
       }
     }
 
+    function updateLogDisplay() {
+      const logList = JSON.parse(localStorage.getItem("mudaLogs") || "[]");
+      const ul = document.getElementById("log-list");
+      ul.innerHTML = "";
+      logList.forEach(log => {
+        const li = document.createElement("li");
+        li.innerText = log;
+        li.className = "log-entry";
+        ul.appendChild(li);
+      });
+    }
+
     window.onload = () => {
       const savedIncome = localStorage.getItem('userIncome');
-      const count = Number(localStorage.getItem('mudaCount') || 0);
-
       if (savedIncome) {
         document.getElementById("income").value = savedIncome;
+        const count = Number(localStorage.getItem('mudaCount') || 0);
         const total = count * 100;
         const mudaIndex = ((total / savedIncome) * 100).toFixed(4);
         document.getElementById("muda-index").innerText = mudaIndex;
       }
 
+      const count = Number(localStorage.getItem('mudaCount') || 0);
       document.querySelector(".status").innerText = `あなたの無駄：${count} 回`;
-
-      // 初期ロード時の称号も表示
-      const titleDisplay = document.getElementById("muda-title");
-      let title = "--";
-      if (count >= 20) {
-        title = "🔥 Blaze Overlord（炎の支配者）";
-      } else if (count >= 10) {
-        title = "🔥 Burn King（燃焼王）";
-      } else if (count >= 5) {
-        title = "🔥 Heat Seeker（火遊び中級）";
-      } else if (count >= 1) {
-        title = "🔥 Waste Rookie（ムダ初心者）";
-      }
-      titleDisplay.innerText = title;
+      document.getElementById("current-title").innerText = getTitle(count);
+      updateLogDisplay();
     };
   </script>
 </body>
