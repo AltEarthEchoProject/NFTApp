@@ -3,81 +3,172 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NFT | Needless Funding Tournament</title>
+  <title>NFT｜Needless Funding Tournament</title>
   <style>
     body {
-      font-family: 'Helvetica Neue', sans-serif;
-      background-color: #fffaf4;
-      color: #111;
-      text-align: center;
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
       padding: 20px;
+      text-align: center;
     }
     h1 {
-      font-size: 2em;
+      font-size: 2rem;
       margin-bottom: 10px;
     }
+    .status, .muda-index-display {
+      font-size: 1.2rem;
+      margin: 10px;
+    }
+    .income-section, .muda-index-display, .history-section {
+      margin: 20px auto;
+      max-width: 400px;
+    }
     input[type="number"] {
-      font-size: 1em;
       padding: 5px;
-      margin: 10px 0;
-      width: 200px;
+      font-size: 1rem;
+      width: 60%;
     }
     button {
-      font-size: 1.2em;
-      padding: 15px 30px;
-      background-color: #ff3c3c;
+      padding: 10px 20px;
+      font-size: 1rem;
+      margin: 10px;
+      cursor: pointer;
+    }
+    .fire-button {
+      background-color: #ff5722;
       color: white;
       border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      transition: transform 0.2s, background-color 0.3s;
+      border-radius: 5px;
     }
-    button:hover {
-      background-color: #e02727;
-      transform: scale(1.05);
+    .flame {
+      position: absolute;
+      animation: floatUp 2s ease-in-out forwards;
     }
-    .muda-history {
-      margin-top: 20px;
-      max-width: 400px;
-      margin-left: auto;
-      margin-right: auto;
-      text-align: left;
-      background: #fff0eb;
-      border: 1px solid #e3c2b3;
-      border-radius: 10px;
+    @keyframes floatUp {
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(-100px); opacity: 0; }
+    }
+    .history-container {
+      max-height: 150px;
+      overflow-y: auto;
+      background: #fff;
+      border: 1px solid #ccc;
       padding: 10px;
-    }
-    .muda-entry {
-      margin: 4px 0;
-      font-size: 0.95em;
-    }
-    .ranking {
-      margin-top: 30px;
-      font-size: 1em;
-    }
-    .muda-index {
-      font-size: 1.2em;
-      margin: 10px 0;
-      font-weight: bold;
+      margin: 0 auto 20px;
+      width: 90%;
+      text-align: left;
     }
   </style>
 </head>
 <body>
-  <h1>NFT | Needless Funding Tournament</h1>
-  <p>あなたの無駄：<span id="muda-count">0</span> 回</p>
+  <h1>NFT｜Needless Funding Tournament</h1>
+  <p class="status">あなたの無駄：0 回</p>
 
-  <label for="income">あなたの年収（円）：</label>
-  <input type="number" id="income" value="2000000">
-  <p class="muda-index">MUDA Index: <span id="muda-index">0.0%</span></p>
-
-  <button id="muda-button">🔥 MUDA課金 🔥</button>
-
-  <div class="muda-history">
-    <strong>MUDA履歴:</strong>
-    <div id="history-list"></div>
+  <div class="income-section">
+    <label for="income">あなたの年収（円）:</label>
+    <input type="number" id="income" placeholder="例：5000000" />
+    <button onclick="saveIncome()">保存</button>
   </div>
 
-  <div class="ranking">
-    <p><strong>ランキング（仮）</strong></p>
-    <p>
+  <div class="muda-index-display">
+    <strong>MUDA Index:</strong> <span id="muda-index">--</span>%
+  </div>
+
+  <button class="fire-button" onclick="ignite()">🔥 MUDA課金 🔥</button>
+
+  <div class="history-section">
+    <h3>MUDA履歴</h3>
+    <div id="history-list" class="history-container"></div>
+  </div>
+
+  <audio id="burn-sound" src="https://actions.google.com/sounds/v1/impacts/fire_explosion.ogg"></audio>
+
+  <script>
+    function ignite() {
+      const button = document.querySelector('.fire-button');
+      const status = document.querySelector('.status');
+      const history = document.getElementById("history-list");
+      const now = new Date().toLocaleString();
+
+      // 炎アニメーション
+      for (let i = 0; i < 5; i++) {
+        const flame = document.createElement('div');
+        flame.className = 'flame';
+        flame.innerText = '🔥';
+        flame.style.left = `${Math.random() * 90 + 5}%`;
+        flame.style.top = `${Math.random() * 80 + 10}%`;
+        flame.style.fontSize = `${Math.random() * 40 + 30}px`;
+        flame.style.opacity = '0.8';
+        document.body.appendChild(flame);
+        setTimeout(() => flame.remove(), 2000);
+      }
+
+      // 音声
+      const audio = document.getElementById("burn-sound");
+      if (audio) {
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+      }
+
+      // 背景フラッシュ
+      document.body.style.transition = 'background-color 0.2s';
+      document.body.style.backgroundColor = '#ffdddd';
+      setTimeout(() => {
+        document.body.style.backgroundColor = '';
+      }, 300);
+
+      // 更新
+      button.disabled = true;
+      status.innerText = '燃やしています…（Needless Funding）';
+
+      setTimeout(() => {
+        button.disabled = false;
+        const count = Number(localStorage.getItem('mudaCount') || 0) + 1;
+        localStorage.setItem('mudaCount', count);
+        status.innerText = `あなたの無駄：${count} 回`;
+
+        const incomeValue = Number(localStorage.getItem('userIncome') || 0);
+        if (incomeValue > 0) {
+          const total = count * 100;
+          const mudaIndex = ((total / incomeValue) * 100).toFixed(4);
+          document.getElementById("muda-index").innerText = mudaIndex;
+        }
+
+        const record = document.createElement('p');
+        record.innerText = `${now} - MUDA課金 100円🔥`;
+        history.prepend(record);
+
+      }, 2000);
+    }
+
+    function saveIncome() {
+      const income = Number(document.getElementById("income").value);
+      if (income > 0) {
+        localStorage.setItem('userIncome', income);
+        alert("年収が保存されました！");
+      } else {
+        alert("正しい年収を入力してください。");
+      }
+    }
+
+    // 初期化
+    window.onload = () => {
+      const savedIncome = localStorage.getItem('userIncome');
+      const count = Number(localStorage.getItem('mudaCount') || 0);
+      const history = document.getElementById("history-list");
+
+      document.querySelector(".status").innerText = `あなたの無駄：${count} 回`;
+
+      if (savedIncome) {
+        document.getElementById("income").value = savedIncome;
+        const total = count * 100;
+        const mudaIndex = ((total / savedIncome) * 100).toFixed(4);
+        document.getElementById("muda-index").innerText = mudaIndex;
+      }
+
+      // 履歴復元は任意（保存する場合は別途実装）
+    };
+  </script>
+</body>
+</html>
