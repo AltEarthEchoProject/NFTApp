@@ -23,6 +23,11 @@
     <strong>MUDA Index:</strong> <span id="muda-index">--</span>%
   </div>
 
+  <!-- 称号 表示 -->
+  <div class="title-display">
+    <strong>あなたの称号:</strong> <span id="muda-title">--</span>
+  </div>
+
   <!-- MUDA課金ボタン -->
   <button class="fire-button" onclick="ignite()">🔥 MUDA課金 🔥</button>
 
@@ -46,10 +51,7 @@
         flame.style.fontSize = `${Math.random() * 40 + 30}px`;
         flame.style.opacity = '0.8';
         document.body.appendChild(flame);
-
-        setTimeout(() => {
-          flame.remove();
-        }, 2000);
+        setTimeout(() => flame.remove(), 2000);
       }
 
       // 🔊 効果音再生
@@ -72,7 +74,7 @@
       button.disabled = true;
       status.innerText = '燃やしています…（Needless Funding）';
 
-      // ✅ 演出後にMUDAカウントとIndex更新
+      // ✅ MUDA数とIndex更新
       setTimeout(() => {
         button.disabled = false;
         const count = Number(localStorage.getItem('mudaCount') || 0) + 1;
@@ -81,13 +83,25 @@
 
         const incomeValue = Number(localStorage.getItem('userIncome') || 0);
         if (incomeValue > 0) {
-          const total = count * 100; // 1回100円と仮定
+          const total = count * 100;
           const mudaIndex = ((total / incomeValue) * 100).toFixed(4);
-          const mudaDisplay = document.getElementById("muda-index");
-          if (mudaDisplay) {
-            mudaDisplay.innerText = `${mudaIndex}`;
-          }
+          document.getElementById("muda-index").innerText = mudaIndex;
         }
+
+        // 🎖️ 称号表示
+        const titleDisplay = document.getElementById("muda-title");
+        let title = "--";
+        if (count >= 20) {
+          title = "🔥 Blaze Overlord（炎の支配者）";
+        } else if (count >= 10) {
+          title = "🔥 Burn King（燃焼王）";
+        } else if (count >= 5) {
+          title = "🔥 Heat Seeker（火遊び中級）";
+        } else if (count >= 1) {
+          title = "🔥 Waste Rookie（ムダ初心者）";
+        }
+        titleDisplay.innerText = title;
+
       }, 2000);
     }
 
@@ -101,19 +115,32 @@
       }
     }
 
-    // ページ読み込み時に情報復元
     window.onload = () => {
       const savedIncome = localStorage.getItem('userIncome');
+      const count = Number(localStorage.getItem('mudaCount') || 0);
+
       if (savedIncome) {
         document.getElementById("income").value = savedIncome;
-        const count = Number(localStorage.getItem('mudaCount') || 0);
         const total = count * 100;
         const mudaIndex = ((total / savedIncome) * 100).toFixed(4);
         document.getElementById("muda-index").innerText = mudaIndex;
       }
 
-      const count = Number(localStorage.getItem('mudaCount') || 0);
       document.querySelector(".status").innerText = `あなたの無駄：${count} 回`;
+
+      // 初期ロード時の称号も表示
+      const titleDisplay = document.getElementById("muda-title");
+      let title = "--";
+      if (count >= 20) {
+        title = "🔥 Blaze Overlord（炎の支配者）";
+      } else if (count >= 10) {
+        title = "🔥 Burn King（燃焼王）";
+      } else if (count >= 5) {
+        title = "🔥 Heat Seeker（火遊び中級）";
+      } else if (count >= 1) {
+        title = "🔥 Waste Rookie（ムダ初心者）";
+      }
+      titleDisplay.innerText = title;
     };
   </script>
 </body>
