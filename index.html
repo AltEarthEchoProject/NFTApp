@@ -7,7 +7,17 @@
 </head>
 <body>
   <h1>NFT｜Needless Funding Tournament</h1>
-  <p class="status">あなたの無駄：0 回</p>
+  <p class="status">あなたの無駄：0 回</p><!-- 年収入力エリア -->
+<div class="income-section">
+  <label for="income">あなたの年収（円）:</label>
+  <input type="number" id="income" placeholder="例：5000000" />
+</div>
+
+<!-- MUDA Index 表示 -->
+<div class="muda-index-display">
+  <strong>MUDA Index:</strong> <span id="muda-index">--</span>%
+</div>
+
   <button class="fire-button" onclick="ignite()">🔥 MUDA課金 🔥</button>
 
   <script src="script.js"></script>
